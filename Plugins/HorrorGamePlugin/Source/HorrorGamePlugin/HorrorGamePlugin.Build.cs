@@ -30,10 +30,11 @@ public class HorrorGamePlugin : ModuleRules
 				"EnhancedInput",
 				"CoreUObject",
 				"Engine",
-				"InputCore"
+				"InputCore",
+                "UMG"
 				// ... add other public dependencies that you statically link with here ...
 			}
-			);
+            );
 			
 		
 		PrivateDependencyModuleNames.AddRange(

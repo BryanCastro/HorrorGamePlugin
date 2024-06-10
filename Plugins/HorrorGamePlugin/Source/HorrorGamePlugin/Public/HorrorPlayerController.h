@@ -12,6 +12,8 @@ class UInputAction;
 struct FInputActionValue;
 class UInputComponent;
 class APlayerCharacter;
+class UUserWidget;
+class AGrabbableActorBase;
 /**
  * 
  */
@@ -35,6 +37,14 @@ protected:
 	UInputAction* MoveAction;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Input")
 	UInputAction* JumpAction;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Input")
+	UInputAction* InteractAction;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Input")
+	UInputAction* GrabAction;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
+	UInputAction* MoveDoorAction;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
+	UInputAction* FlashLightToggleAction;
 
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
@@ -42,10 +52,27 @@ protected:
 	UFUNCTION()
 	bool SetActions(UEnhancedInputComponent* EnhancedInputComponent);
 
+	UFUNCTION()
+	void Initialize();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	TSubclassOf<UUserWidget> MainWidgetClass;
+
 private:
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void Jump();
+	void Interact();
+	void GrabActor(const FInputActionValue& Value);
+	void HandleGrabbedActor(const FInputActionValue& Value);
+	void ReleaseGrabbedActor(const FInputActionValue& Value);
+	void HandleFlashLightOn(const FInputActionValue& Value);
+
+	bool bIsGrabbingActor = false;
+	bool bIsFlashLightOn = true;
+
+	UPROPERTY()
+	AGrabbableActorBase* GrabbedActorRef;
 
 	UPROPERTY()
 	APlayerCharacter* PlayerCharacterRef;

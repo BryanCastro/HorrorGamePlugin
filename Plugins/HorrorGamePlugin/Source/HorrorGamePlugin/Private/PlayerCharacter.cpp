@@ -4,6 +4,11 @@
 #include "PlayerCharacter.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "DrawDebugHelpers.h"
+#include "Components/SpotLightComponent.h"
+#include "GameFramework/SpringArmComponent.h"
+
+
 // Sets default values
 APlayerCharacter::APlayerCharacter()
 {
@@ -15,6 +20,14 @@ APlayerCharacter::APlayerCharacter()
 	Camera->SetRelativeLocation(FVector(0, 0, 60.0f));
 	Camera->bUsePawnControlRotation = true;
 
+
+	FlashLightSpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Spring Arm Component"));
+	FlashLightSpringArm->SetupAttachment(Camera);
+
+	FlashLight = CreateDefaultSubobject<USpotLightComponent>((TEXT("Flash Light")));
+	FlashLight->SetupAttachment(FlashLightSpringArm);
+
+
 	GetCharacterMovement()->MaxWalkSpeed = 400.0f;
 }
 
@@ -22,8 +35,10 @@ APlayerCharacter::APlayerCharacter()
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
 	
 }
+
 
 // Called every frame
 void APlayerCharacter::Tick(float DeltaTime)
@@ -39,3 +54,38 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 }
 
+AActor* APlayerCharacter::LineTrace(float Length) {
+
+	UWorld* World = GetWorld();
+	FHitResult OutHit;
+	FVector Start = Camera->GetComponentLocation();
+	FVector End = Camera->GetForwardVector() * Length;
+	bool bHit = World->LineTraceSingleByChannel(OutHit, Start, Start+End, ECollisionChannel::ECC_Visibility);
+
+	if (bHit)
+		return OutHit.GetActor();
+	return nullptr;
+}
+
+void APlayerCharacter::DisplayDebugLine(bool success, float Length, FVector HitLocation) {
+	UWorld* World = GetWorld();
+	FVector Start = Camera->GetComponentLocation();
+	FVector End = Camera->GetForwardVector() * Length;
+
+	if (success) {
+		DrawDebugLine(World, Start, Start + End, FColor::Green, false, 5.0f, 0, 1);
+		DrawDebugPoint(World, HitLocation, 5, FColor::Yellow, false, 5.0f);
+	}
+	else {
+		DrawDebugLine(World, Start, Start + End, FColor::Red, false, 5.0f, 0, 1);
+		DrawDebugPoint(World, HitLocation, 5, FColor::Yellow, false, 5.0f);
+	}
+	
+}
+
+void APlayerCharacter::TurnOnFlashLight(bool bTurnOnFlashLight) {
+	if (bTurnOnFlashLight)
+		FlashLight->SetVisibility(true);
+	else
+		FlashLight->SetVisibility(false);
+}

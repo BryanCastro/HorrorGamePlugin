@@ -7,15 +7,24 @@
 #include "PlayerCharacter.generated.h"
 
 class UCameraComponent;
+class USpotLightComponent;
+class USpringArmComponent;
 
 UCLASS()
 class HORRORGAMEPLUGIN_API APlayerCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
+
 public:
 	// Sets default values for this character's properties
 	APlayerCharacter();
+
+	AActor* LineTrace(float Length);
+	void DisplayDebugLine(bool success, float Length, FVector HitLocation);
+	
+	UFUNCTION()
+	void TurnOnFlashLight(bool bTurnOnFlashLight);
 
 protected:
 	// Called when the game starts or when spawned
@@ -23,6 +32,14 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category="Camera")
 	UCameraComponent* Camera;
+
+	UPROPERTY(EditAnywhere, Category="FlashLight")
+	USpotLightComponent* FlashLight;
+
+	UPROPERTY(EditAnywhere, Category="FlashLight")
+	USpringArmComponent* FlashLightSpringArm;
+
+
 
 public:	
 	// Called every frame
