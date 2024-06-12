@@ -9,6 +9,7 @@
 class UCameraComponent;
 class USpotLightComponent;
 class USpringArmComponent;
+class UMovementComp;
 
 UCLASS()
 class HORRORGAMEPLUGIN_API APlayerCharacter : public ACharacter
@@ -25,6 +26,7 @@ public:
 	
 	UFUNCTION()
 	void TurnOnFlashLight(bool bTurnOnFlashLight);
+	UMovementComp* GetMovementComp();
 
 protected:
 	// Called when the game starts or when spawned
@@ -39,6 +41,10 @@ protected:
 	UPROPERTY(EditAnywhere, Category="FlashLight")
 	USpringArmComponent* FlashLightSpringArm;
 
+	UPROPERTY(EditAnywhere, Category="Movement")
+	UMovementComp* MovementComp;
+
+	void Initialize();
 
 
 public:	

@@ -7,6 +7,9 @@
 #include "DrawDebugHelpers.h"
 #include "Components/SpotLightComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "MovementComp.h"
+#include "GameUtils.h"
+
 
 
 // Sets default values
@@ -27,6 +30,8 @@ APlayerCharacter::APlayerCharacter()
 	FlashLight = CreateDefaultSubobject<USpotLightComponent>((TEXT("Flash Light")));
 	FlashLight->SetupAttachment(FlashLightSpringArm);
 
+	MovementComp = CreateDefaultSubobject<UMovementComp>((TEXT("Movement Comp")));
+	AddOwnedComponent(MovementComp);
 
 	GetCharacterMovement()->MaxWalkSpeed = 400.0f;
 }
@@ -36,7 +41,7 @@ void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	
+	Initialize();
 }
 
 
@@ -52,6 +57,13 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+}
+
+void APlayerCharacter::Initialize() {
+	if (MovementComp)
+		MovementComp->Initialize(this);
+	else
+		GameUtils::LogMessage("PlayerCharacter.cpp: Failed to Find a MovementComp");
 }
 
 AActor* APlayerCharacter::LineTrace(float Length) {
@@ -88,4 +100,8 @@ void APlayerCharacter::TurnOnFlashLight(bool bTurnOnFlashLight) {
 		FlashLight->SetVisibility(true);
 	else
 		FlashLight->SetVisibility(false);
+}
+
+UMovementComp* APlayerCharacter::GetMovementComp() {
+	return MovementComp;
 }

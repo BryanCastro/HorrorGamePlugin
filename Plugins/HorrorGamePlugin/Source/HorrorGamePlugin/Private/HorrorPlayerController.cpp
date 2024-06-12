@@ -13,6 +13,7 @@
 #include "GrabbableActorBase.h"
 #include "Blueprint/UserWidget.h"
 #include "Engine/World.h"
+#include "MovementComp.h"
 
 AHorrorPlayerController::AHorrorPlayerController() {
 
@@ -42,8 +43,6 @@ void AHorrorPlayerController::Initialize() {
 	}
 	else
 		GameUtils::LogMessage("HorrorPlayerController.cpp: Failed to Load MainWidgetClass");
-
-
 }
 
 void AHorrorPlayerController::SetupInputComponent() {
@@ -104,6 +103,12 @@ bool AHorrorPlayerController::SetActions(UEnhancedInputComponent* EnhancedInputC
 		success = false;
 	if (FlashLightToggleAction)
 		EnhancedInputComponent->BindAction(FlashLightToggleAction, ETriggerEvent::Started, this, &AHorrorPlayerController::HandleFlashLightOn);
+	else
+		success = false;
+	if (SprintAction) {
+		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Started, this, &AHorrorPlayerController::StartSprint);
+		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &AHorrorPlayerController::StopSprint);
+	}
 	else
 		success = false;
 
@@ -194,4 +199,13 @@ void AHorrorPlayerController::HandleFlashLightOn(const FInputActionValue& Value)
 		PlayerCharacterRef->TurnOnFlashLight(true);
 
 	bIsFlashLightOn = !bIsFlashLightOn;
+}
+void AHorrorPlayerController::StartSprint(const FInputActionValue& Value){
+	if (PlayerCharacterRef)
+		PlayerCharacterRef->GetMovementComp()->StartSprint();
+}
+
+void AHorrorPlayerController::StopSprint(const FInputActionValue& Value){
+	if (PlayerCharacterRef)
+		PlayerCharacterRef->GetMovementComp()->StopSprint();
 }

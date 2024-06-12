@@ -45,6 +45,9 @@ protected:
 	UInputAction* MoveDoorAction;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
 	UInputAction* FlashLightToggleAction;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
+	UInputAction* SprintAction;
+
 
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
@@ -67,6 +70,9 @@ private:
 	void HandleGrabbedActor(const FInputActionValue& Value);
 	void ReleaseGrabbedActor(const FInputActionValue& Value);
 	void HandleFlashLightOn(const FInputActionValue& Value);
+	void StartSprint(const FInputActionValue& Value);
+	void StopSprint(const FInputActionValue& Value);
+
 
 	bool bIsGrabbingActor = false;
 	bool bIsFlashLightOn = true;
@@ -76,4 +82,6 @@ private:
 
 	UPROPERTY()
 	APlayerCharacter* PlayerCharacterRef;
+
+
 };
