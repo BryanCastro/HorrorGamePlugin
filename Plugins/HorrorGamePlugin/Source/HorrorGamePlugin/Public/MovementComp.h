@@ -9,6 +9,7 @@
 class ACharacter;
 class UCharacterMovementComponent;
 struct FTimerHandle;
+class UFloatCurve;
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -38,12 +39,25 @@ public:
 	float SprintRecoveryTime = 0.1f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	float SprintRecoveryDelay = 0.1f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crouch")
+	float CrouchSpeed=200.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crouch")
+	float CrouchHalfHeight=44.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crouch")
+	float CrouchLerpDuration= 0.5f;
+	// Reference to the float curve
+	UPROPERTY(EditAnywhere, Category = "Crouch")
+	UCurveFloat* CrouchFloatCurve;
+
 
 	UFUNCTION()
 	void StartSprint();
 
 	UFUNCTION()
 	void StopSprint();
+	UFUNCTION()
+	void ToggleCrouch(bool bShouldCrouch);
+
 
 
 protected:
@@ -64,6 +78,18 @@ public:
 private:
 	FTimerHandle SprintTimerHandle;
 	FTimerHandle RegenerateStaminaHandle;
+	FTimerHandle CrouchUpHandle;
+	FTimerHandle CrouchDownHandle;
+
 	void SprintTimer();
 	void RegenerateStaminaTimer();
+	void CrouchDown();
+	void CrouchUp();
+
+	float PlayerCapsuleHeight;
+	bool bIsCrouching=false;
+
+	float CrouchStartTime = 0.0f;
+	float CurrentCrouchTime = 0.0f;
+	float CrouchEndValue = 1.0f; //value of last key in timeline curve aka at time CrouchLerpDuration, this should be 1
 };

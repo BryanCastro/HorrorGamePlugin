@@ -47,7 +47,8 @@ protected:
 	UInputAction* FlashLightToggleAction;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
 	UInputAction* SprintAction;
-
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
+	UInputAction* CrouchToggleAction;
 
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
@@ -72,10 +73,11 @@ private:
 	void HandleFlashLightOn(const FInputActionValue& Value);
 	void StartSprint(const FInputActionValue& Value);
 	void StopSprint(const FInputActionValue& Value);
-
+	void HandleCrouch(const FInputActionValue& Value);
 
 	bool bIsGrabbingActor = false;
 	bool bIsFlashLightOn = true;
+	bool bIsCrouching = false;
 
 	UPROPERTY()
 	AGrabbableActorBase* GrabbedActorRef;

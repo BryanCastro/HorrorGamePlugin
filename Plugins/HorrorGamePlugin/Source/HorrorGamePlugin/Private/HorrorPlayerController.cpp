@@ -14,6 +14,8 @@
 #include "Blueprint/UserWidget.h"
 #include "Engine/World.h"
 #include "MovementComp.h"
+#include "Curves/CurveFloat.h" // Include for UCurveFloat
+
 
 AHorrorPlayerController::AHorrorPlayerController() {
 
@@ -109,6 +111,10 @@ bool AHorrorPlayerController::SetActions(UEnhancedInputComponent* EnhancedInputC
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Started, this, &AHorrorPlayerController::StartSprint);
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &AHorrorPlayerController::StopSprint);
 	}
+	else
+		success = false;
+	if (CrouchToggleAction)
+		EnhancedInputComponent->BindAction(CrouchToggleAction, ETriggerEvent::Started, this, &AHorrorPlayerController::HandleCrouch);
 	else
 		success = false;
 
@@ -208,4 +214,14 @@ void AHorrorPlayerController::StartSprint(const FInputActionValue& Value){
 void AHorrorPlayerController::StopSprint(const FInputActionValue& Value){
 	if (PlayerCharacterRef)
 		PlayerCharacterRef->GetMovementComp()->StopSprint();
+}
+
+void AHorrorPlayerController::HandleCrouch(const FInputActionValue& Value)
+{
+	bIsCrouching = !bIsCrouching;
+	if(PlayerCharacterRef)
+	{
+		PlayerCharacterRef->GetMovementComp()->ToggleCrouch(bIsCrouching);
+	}
+
 }

@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "TimerManager.h"
+#include "Components/CapsuleComponent.h"
 #include "Engine/World.h"
 
 // Sets default values for this component's properties
@@ -46,6 +47,7 @@ void UMovementComp::Initialize(ACharacter* OwningCharacter) {
 		OwningCharacterMovementCompRef=OwningCharacterRef->GetCharacterMovement();
 		if (OwningCharacterMovementCompRef) {
 			OwningCharacterMovementCompRef->MaxWalkSpeed = WalkSpeed;
+			PlayerCapsuleHeight=OwningCharacterRef->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
 		}
 		else
 			GameUtils::LogMessage("MovementComp.cpp: OwningCharacterMovementCompRef is nullptr");
@@ -57,10 +59,13 @@ void UMovementComp::Initialize(ACharacter* OwningCharacter) {
 
 
 void UMovementComp::StartSprint() {
-	if (CurrentStamina > MinStamina && OwningCharacterMovementCompRef->Velocity.Length()>0) {
-		OwningCharacterMovementCompRef->MaxWalkSpeed = SprintSpeed;
-		GetWorld()->GetTimerManager().ClearTimer(RegenerateStaminaHandle);
-		GetWorld()->GetTimerManager().SetTimer(SprintTimerHandle, this, &UMovementComp::SprintTimer, SprintDrainageTime, true, SprintStartDelay);
+	if(!bIsCrouching)
+	{
+		if (CurrentStamina > MinStamina && OwningCharacterMovementCompRef->Velocity.Length() > 0) {
+			OwningCharacterMovementCompRef->MaxWalkSpeed = SprintSpeed;
+			GetWorld()->GetTimerManager().ClearTimer(RegenerateStaminaHandle);
+			GetWorld()->GetTimerManager().SetTimer(SprintTimerHandle, this, &UMovementComp::SprintTimer, SprintDrainageTime, true, SprintStartDelay);
+		}
 	}
 }
 
@@ -90,4 +95,80 @@ void UMovementComp::RegenerateStaminaTimer() {
 		GetWorld()->GetTimerManager().ClearTimer(RegenerateStaminaHandle);
 	}
 	GameUtils::LogMessage(FString::Printf(TEXT("MovementComp.cpp: Current Stamina: %f"), CurrentStamina), FColor::Green);
+}
+
+void UMovementComp::ToggleCrouch(bool bShouldCrouch)
+{
+
+	bIsCrouching = bShouldCrouch;
+
+	if(bShouldCrouch)
+	{
+		StopSprint();
+		CurrentCrouchTime = 0;
+		GetWorld()->GetTimerManager().ClearTimer(CrouchUpHandle);
+		GetWorld()->GetTimerManager().SetTimer(CrouchDownHandle, this, &UMovementComp::CrouchDown, 0.01f, true, 0.0f);
+	}
+	else
+	{
+		CurrentCrouchTime = 0;
+		GetWorld()->GetTimerManager().ClearTimer(CrouchDownHandle);
+		GetWorld()->GetTimerManager().SetTimer(CrouchUpHandle, this, &UMovementComp::CrouchUp, 0.01f, true, 0.0f);
+	}
+}
+
+void UMovementComp::CrouchDown()
+{
+	OwningCharacterMovementCompRef->MaxWalkSpeed = CrouchSpeed;
+
+	if(CrouchFloatCurve)
+	{
+		CurrentCrouchTime += GetWorld()->GetDeltaSeconds();
+		// Calculate the alpha value based on the current time and total duration
+		float Alpha = FMath::Clamp(CurrentCrouchTime / CrouchLerpDuration, 0.0f, 1.0f);
+		float CurveValue = CrouchFloatCurve->GetFloatValue(Alpha);
+		float InterpolatedValue = FMath::Lerp(PlayerCapsuleHeight, CrouchHalfHeight, CurveValue);
+		OwningCharacterRef->GetCapsuleComponent()->SetCapsuleHalfHeight(InterpolatedValue);
+
+		if(CurrentCrouchTime >= CrouchLerpDuration)
+		{
+			GetWorld()->GetTimerManager().ClearTimer(CrouchDownHandle);
+			GameUtils::LogMessage("MovementComp.cpp: Crouch Lerp Complete");
+			CurrentCrouchTime = 0;
+		}
+	}
+	else
+	{
+		GameUtils::LogMessage("MovementComp.cpp: Failed to Find a CrouchFloatCurve!");
+	}
+
+
+}
+
+void UMovementComp::CrouchUp()
+{
+
+	OwningCharacterMovementCompRef->MaxWalkSpeed = WalkSpeed;
+
+	if(CrouchFloatCurve)
+	{
+		CurrentCrouchTime += GetWorld()->GetDeltaSeconds();
+		// Calculate the alpha value based on the current time and total duration
+		float Alpha = FMath::Clamp(CurrentCrouchTime / CrouchLerpDuration, 0.0f, 1.0f);
+		float CurveValue = CrouchFloatCurve->GetFloatValue(Alpha);
+		float InterpolatedValue = FMath::Lerp(CrouchHalfHeight, PlayerCapsuleHeight, CurveValue);
+		OwningCharacterRef->GetCapsuleComponent()->SetCapsuleHalfHeight(InterpolatedValue);
+
+		if (CurrentCrouchTime >= CrouchLerpDuration)
+		{
+			GetWorld()->GetTimerManager().ClearTimer(CrouchUpHandle);
+			GameUtils::LogMessage("MovementComp.cpp: Stand Up Lerp Complete");
+			CurrentCrouchTime = 0;
+		}
+	}
+	else
+	{
+		GameUtils::LogMessage("MovementComp.cpp: Failed to Find a CrouchFloatCurve!");
+	}
+
 }
