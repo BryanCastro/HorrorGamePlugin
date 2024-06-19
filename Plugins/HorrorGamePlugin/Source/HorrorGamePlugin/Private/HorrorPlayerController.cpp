@@ -208,7 +208,12 @@ void AHorrorPlayerController::HandleFlashLightOn(const FInputActionValue& Value)
 }
 void AHorrorPlayerController::StartSprint(const FInputActionValue& Value){
 	if (PlayerCharacterRef)
+	{
+		if (bIsCrouching)
+			HandleCrouch(Value);
 		PlayerCharacterRef->GetMovementComp()->StartSprint();
+	}
+
 }
 
 void AHorrorPlayerController::StopSprint(const FInputActionValue& Value){

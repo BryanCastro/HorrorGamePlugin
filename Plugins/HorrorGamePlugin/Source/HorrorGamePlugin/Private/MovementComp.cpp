@@ -59,13 +59,12 @@ void UMovementComp::Initialize(ACharacter* OwningCharacter) {
 
 
 void UMovementComp::StartSprint() {
-	if(!bIsCrouching)
-	{
-		if (CurrentStamina > MinStamina && OwningCharacterMovementCompRef->Velocity.Length() > 0) {
-			OwningCharacterMovementCompRef->MaxWalkSpeed = SprintSpeed;
-			GetWorld()->GetTimerManager().ClearTimer(RegenerateStaminaHandle);
-			GetWorld()->GetTimerManager().SetTimer(SprintTimerHandle, this, &UMovementComp::SprintTimer, SprintDrainageTime, true, SprintStartDelay);
-		}
+
+
+	if (CurrentStamina > MinStamina && OwningCharacterMovementCompRef->Velocity.Length() > 0) {
+		OwningCharacterMovementCompRef->MaxWalkSpeed = SprintSpeed;
+		GetWorld()->GetTimerManager().ClearTimer(RegenerateStaminaHandle);
+		GetWorld()->GetTimerManager().SetTimer(SprintTimerHandle, this, &UMovementComp::SprintTimer, SprintDrainageTime, true, SprintStartDelay);
 	}
 }
 
@@ -106,12 +105,14 @@ void UMovementComp::ToggleCrouch(bool bShouldCrouch)
 	{
 		StopSprint();
 		CurrentCrouchTime = 0;
+		OwningCharacterMovementCompRef->MaxWalkSpeed = CrouchSpeed;
 		GetWorld()->GetTimerManager().ClearTimer(CrouchUpHandle);
 		GetWorld()->GetTimerManager().SetTimer(CrouchDownHandle, this, &UMovementComp::CrouchDown, 0.01f, true, 0.0f);
 	}
 	else
 	{
 		CurrentCrouchTime = 0;
+		OwningCharacterMovementCompRef->MaxWalkSpeed = WalkSpeed;
 		GetWorld()->GetTimerManager().ClearTimer(CrouchDownHandle);
 		GetWorld()->GetTimerManager().SetTimer(CrouchUpHandle, this, &UMovementComp::CrouchUp, 0.01f, true, 0.0f);
 	}
@@ -119,7 +120,6 @@ void UMovementComp::ToggleCrouch(bool bShouldCrouch)
 
 void UMovementComp::CrouchDown()
 {
-	OwningCharacterMovementCompRef->MaxWalkSpeed = CrouchSpeed;
 
 	if(CrouchFloatCurve)
 	{
@@ -147,8 +147,6 @@ void UMovementComp::CrouchDown()
 
 void UMovementComp::CrouchUp()
 {
-
-	OwningCharacterMovementCompRef->MaxWalkSpeed = WalkSpeed;
 
 	if(CrouchFloatCurve)
 	{
